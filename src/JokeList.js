@@ -15,6 +15,7 @@ class JokeList extends React.Component {
     //alternative for useState
     this.state = { jokes: [] }
     this.generateNewJokes = this.generateNewJokes.bind(this);
+    this.vote = this.vote.bind(this);
   }
   
   async getJokes() {
@@ -59,6 +60,15 @@ class JokeList extends React.Component {
 
     if (this.state.jokes.length === 0) this.getJokes();
   };
+
+   /* change vote for this id by delta (+1 or -1) */
+
+   vote (id, delta){
+    console.log('this:', this)
+    this.setState({ jokes:
+      this.state.jokes.map(j => (j.id === id ? { ...j, votes: j.votes + delta } : j))
+    });
+  }
   
 
   render() {
@@ -68,13 +78,8 @@ class JokeList extends React.Component {
 
     /* empty joke list and then call getJokes */
 
-    /* change vote for this id by delta (+1 or -1) */
-
-    function vote(id, delta) {
-      this.setState(allJokes =>
-        allJokes.map(j => (j.id === id ? { ...j, votes: j.votes + delta } : j))
-    );
-  }
+   
+  
 
   /* render: either loading spinner or list of sorted jokes. */
 
@@ -88,7 +93,7 @@ class JokeList extends React.Component {
         </button>
   
         {sortedJokes.map(j => (
-          <Joke text={j.joke} key={j.id} id={j.id} votes={j.votes} vote={vote} />
+          <Joke text={j.joke} key={j.id} id={j.id} votes={j.votes} vote={this.vote} />
         ))}
       </div>
     );
