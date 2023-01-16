@@ -1,51 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React
+// , { useState, useEffect }
+ from "react";
 import axios from "axios";
 import Joke from "./Joke";
 import "./JokeList.css";
 
-function JokeList({ numJokesToGet = 10 }) {
-  const [jokes, setJokes] = useState([]);
-
-  /* get jokes if there are no jokes */
-
-  useEffect(function() {
-    async function getJokes() {
-      let j = [...jokes];
-      let seenJokes = new Set();
-      try {
-        while (j.length < numJokesToGet) {
-          let res = await axios.get("https://icanhazdadjoke.com", {
-            headers: { Accept: "application/json" }
-          });
-          let { status, ...jokeObj } = res.data;
+class JokeList extends React.Component {
+  constructor(props){
+    super(props);
+    // console.log('this.props:', this.props);
+    //set props
+    // const { numJokesToGet } = this.props
+    // console.log('numJokesToGet: ', numJokesToGet)
+    //alternative for useState
+    this.state = { jokes: [] }
+    this.generateNewJokes = this.generateNewJokes.bind(this);
+  }
   
-          if (!seenJokes.has(jokeObj.id)) {
-            seenJokes.add(jokeObj.id);
-            j.push({ ...jokeObj, votes: 0 });
-          } else {
-            console.error("duplicate found!");
-          }
+  async getJokes() {
+
+    // console.log('this:', this);
+    let j = [...this.state.jokes];
+    // console.log('this.state.jokes:', this.state.jokes)
+    let seenJokes = new Set();
+    try {
+      // console.log('j:', j );
+      while (j.length < this.props.numJokesToGet) {
+        let res = await axios.get("https://icanhazdadjoke.com", {
+          headers: { Accept: "application/json" }
+        });
+        let { status, ...jokeObj } = res.data;
+
+        if (!seenJokes.has(jokeObj.id)) {
+          seenJokes.add(jokeObj.id);
+          j.push({ ...jokeObj, votes: 0 });
+        } else {
+          console.error("duplicate found!");
         }
-        setJokes(j);
-      } catch (e) {
-        console.log(e);
       }
+      //alternative to setJokes(j)
+      this.setState({ jokes: j })
+
+    } catch (e) {
+      console.log(e);
     }
 
-    if (jokes.length === 0) getJokes();
-  }, [jokes, numJokesToGet]);
-
-  /* empty joke list and then call getJokes */
-
-  function generateNewJokes() {
-    setJokes([]);
   }
 
-  /* change vote for this id by delta (+1 or -1) */
+  async generateNewJokes () {
+    await this.setState({ jokes: [] });
+    this.componentDidMount();
+    
+  }
 
-  function vote(id, delta) {
-    setJokes(allJokes =>
-      allJokes.map(j => (j.id === id ? { ...j, votes: j.votes + delta } : j))
+
+  async componentDidMount() {
+    this.getJokes();
+
+    if (this.state.jokes.length === 0) this.getJokes();
+  };
+  
+
+  render() {
+    const { jokes } = this.state;
+
+    
+
+    /* empty joke list and then call getJokes */
+
+    /* change vote for this id by delta (+1 or -1) */
+
+    function vote(id, delta) {
+      this.setState(allJokes =>
+        allJokes.map(j => (j.id === id ? { ...j, votes: j.votes + delta } : j))
     );
   }
 
@@ -56,7 +83,7 @@ function JokeList({ numJokesToGet = 10 }) {
   
     return (
       <div className="JokeList">
-        <button className="JokeList-getmore" onClick={generateNewJokes}>
+        <button className="JokeList-getmore" onClick={this.generateNewJokes}>
           Get New Jokes
         </button>
   
@@ -68,7 +95,9 @@ function JokeList({ numJokesToGet = 10 }) {
   }
 
   return null;
+}
 
 }
+
 
 export default JokeList;
